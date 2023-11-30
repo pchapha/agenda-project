@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beautiful Timeline</title>
+    <!-- Include Bootstrap CSS (you can replace this link with your local Bootstrap file) -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+    <style>
+        body {
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .timeline {
+            list-style: none;
+            padding: 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 30px;
+        }
+
+        .timeline-date {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .timeline-content {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Timeline</h1>
+
+<ul class="timeline">
+    {% for meeting in meetings %}
+        <li class="timeline-item">
+            <div class="timeline-date">
+                Meeting ID: {{ meeting.meeting_id }} - {{ meeting.date }}
+            </div>
+            <div class="timeline-content">
+                <p>Meeting Count: {{ meeting.meeting_count }}</p>
+                <p>Status: {{ meeting.status }}</p>
+                <p>Resolution: {{ meeting.resolution }}</p>
+                <p>Agenda Name: {{ meeting.agenda_name }}</p>
+                <!-- Add more details as needed -->
+            </div>
+        </li>
+    {% endfor %}
+</ul>
+
+<!-- Include Bootstrap JS (optional) -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+</body>
+</html>
