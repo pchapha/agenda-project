@@ -48,7 +48,19 @@
     <h2 class="mt-4">PostgreSQL Table</h2>
 
     <h3>Data:</h3>
+    <!-- Link -->
+    <a href="{{ url_for('search', searchTerm='your_search_term') }}">Search</a>
     
+    <!-- Form -->
+    <form action="{{ url_for('search') }}" method="GET" class="mb-3">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Search..." name="searchTerm">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="submit">Search</button>
+            </div>
+        </div>
+    </form>
+
     <a href="/add" class="btn btn-success">Add New Row</a>
 
     <table class="table table-striped table-bordered">
@@ -69,11 +81,7 @@
                     <td>
                         <a href="{{ url_for('edit', id=row['meeting_id']) }}" class="btn btn-primary btn-sm">Edit</a>
                         <a href="{{ url_for('delete', id=row['meeting_id']) }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this row?')">Delete</a>
-                    </td>
-                    <td>
                         <a href="{{ url_for('addrelated', id=row['meeting_id']) }}" class="btn btn-secondary btn-sm">Add related</a>
-                    </td>
-                    <td>
                         <a href="{{ url_for('timeline', id=row['meeting_id']) }}" class="btn btn-secondary btn-sm">Timeline</a>
                     </td>
                 </tr>

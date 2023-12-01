@@ -2,7 +2,7 @@ from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Numeric, func
 from datetime import datetime
-
+from sqlalchemy import or_
 app = Flask(__name__)
 # Set a secret key for the Flask app
 app.secret_key = 'your_secret_key_here'
@@ -145,6 +145,32 @@ def addrelated(id):
         return redirect(url_for('index'))
 
     return render_template('add_related.html', columns_info=columns_info, row=row)
+
+@app.route('/search')
+def search():
+    search_term = request.args.get('searchTerm', '')
+    print(f'search_term: {search_term}')
+    
+    # Build a list of conditions for each column you want to search
+    conditions = [
+
+        Agenda.purpose.ilike(f"%{search_term}%"),
+        Agenda.agenda_name.ilike(f"%{search_term}%"),
+        Agenda.resolution.ilike(f"%{search_term}%"),
+        Agenda.note.ilike(f"%{search_term}%"),
+        Agenda.department.ilike(f"%{search_term}%"),
+        Agenda.status.ilike(f"%{search_term}%"),
+        Agenda.committee.ilike(f"%{search_term}%"),
+    ]
+    print(f'conditions: {conditions}')
+    columns_info = {column.name: (column.name, str(column.type)) for column in Agenda.__table__.columns}
+    # Combine conditions with OR to match any of them
+    search_filter = or_(*conditions)
+
+    # Use the filter in your query
+    filtered_rows = Agenda.query.filter(search_filter).all()
+
+    return render_template('index.html', rows=filtered_rows, columns=columns_info)
 
 @app.route('/add', methods=['GET', 'POST'])
 def add():
