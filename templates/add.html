@@ -32,7 +32,7 @@
                             <input type="hidden" name="{{ column_name }}" value="off">
                         </div>
                     {% elif column_type == 'DATETIME' %}
-                        <input type="text" class="form-control datepicker" id="{{ column_name }}" name="{{ column_name }}">
+                        <input type="text" class="form-control datepicker" id="{{ column_name }}" name="{{ column_name }}" >
                         <!-- Include necessary datepicker scripts -->
                     {% else %}
                         <input type="text" class="form-control" id="{{ column_name }}" name="{{ column_name }}">
@@ -53,5 +53,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
+<!-- Include Datepicker JS (if using datetime field) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+<script>
+    $(document).ready(function(){
+        $('.datepicker').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            todayHighlight: true
+        });
+    });
+</script>
 </body>
 </html>

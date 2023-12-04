@@ -60,11 +60,12 @@ def index():
 
     # Get all rows from the Feedback model
     rows = Agenda.query.all()
+ 
 
     # Convert rows to a list of dictionaries for easier rendering in the template
     # rows_data = [{column: getattr(row, column) for column in columns} for row in rows]
 
-    return render_template('tables-datatables.html', columns=columns, rows=rows)
+    return render_template('index.html', columns=columns, rows=rows)
 
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit(id):
