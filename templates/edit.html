@@ -24,7 +24,7 @@
                     <label class="form-check-label" for="{{ column_name }}">Check if true</label>
                 </div>
             {% elif column_type == 'DATETIME' %}
-                <input type="text" class="form-control datepicker" id="{{ column_name }}" name="{{ column_name }}" value="{{ row[column_name] | default('') }}" readonly>
+                <input type="text" class="form-control datepicker" id="{{ column_name }}" name="{{ column_name }}" value="{{ row[column_name] | default('') }}" >
                 <!-- Include necessary datepicker scripts -->
             {% else %}
                 {# Show an empty string if the value in the row is None #}

@@ -11,9 +11,49 @@
 <body>
 
 <div class="container">
-    <h2 class="mt-4">Add Related Meeting</h2>
+    <h2 class="mt-4">Add Related Meeting of Meeting Information</h2>
 
     <form method="post">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <table class="table table-bordered">
+                        <thead class="thead-dark">
+                            <tr>
+                                {% for column, (column_name, column_type) in columns_info.items() %}
+                                    {% if column_name not in ['meeting_id', 'is_first_time', 'related_meeting'] %}
+                                        <th scope="col">{{ column_name.capitalize() }}</th>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                {% for column, (column_name, column_type) in columns_info.items() %}
+                                    {% if column_name not in ['meeting_id', 'is_first_time', 'related_meeting'] %}
+                                        <td>
+                                            {% if column_type == 'BOOLEAN' %}
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input" {% if row[column_name] %}checked{% endif %} disabled>
+                                                    <label class="form-check-label" for="{{ column_name }}">Check if true</label>
+                                                </div>
+                                            {% elif column_type == 'DATETIME' %}
+                                                <p>{{ row[column_name] | default('') }}</p>
+                                                <!-- Include necessary datepicker scripts -->
+                                            {% else %}
+                                                <p>{{ row[column_name] | default('') }}</p>
+                                            {% endif %}
+                                        </td>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <h2 class="mt-4">Meeting Information:</h2>
         {% for column, (column_name, column_type) in columns_info.items() %}
             {% if column_name not in ['meeting_id', 'is_first_time', 'related_meeting'] %}
                 <div class="form-group">
@@ -24,12 +64,13 @@
                             <input type="checkbox" class="form-check-input" id="{{ column_name }}" name="{{ column_name }}" {% if row[column_name] %}checked{% endif %}>
                             <label class="form-check-label" for="{{ column_name }}">Check if true</label>
                         </div>
+                        <!-- This case will not be possible because the column is_first_time had been filter out -->
                     {% elif column_type == 'DATETIME' %}
-                        <input type="text" class="form-control datepicker" id="{{ column_name }}" name="{{ column_name }}" value="{{ row[column_name] | default('') }}" readonly>
+                        <input type="text" class="form-control datepicker" id="{{ column_name }}" name="{{ column_name }}" >
                         <!-- Include necessary datepicker scripts -->
                     {% else %}
                         {# Show an empty string if the value in the row is None #}
-                        <input type="text" class="form-control" id="{{ column_name }}" name="{{ column_name }}" value="{% if row[column_name] is not none %}{{ row[column_name] }}{% endif %}">
+                        <input type="text" class="form-control" id="{{ column_name }}" name="{{ column_name }}">
                     {% endif %}
                     
                 </div>
