@@ -193,7 +193,7 @@ def add():
         related_meeting = request.form['related_meeting'] if request.form['related_meeting']!= '' else None
         committee       = request.form['committee'] if request.form['committee']!= '' else None
         # print(customer, dealer, rating, comments)
-        if meeting_id == '' or agenda_name == '':
+        if meeting_id is None or agenda_name is None:
             return render_template('add.html', columns_info=columns_info, message='Please enter required fields')
         
         # Handle boolean values
