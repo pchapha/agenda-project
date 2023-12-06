@@ -79,6 +79,8 @@
     
 
         <button type="submit" class="btn btn-primary">Save Changes</button>
+        <button type="button" class="btn btn-secondary" onclick="cancelForm()">Cancel</button>
+
     </form>
 </div>
 
@@ -90,6 +92,11 @@
 <!-- Include Datepicker JS (if using datetime field) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
 <script>
+    // JavaScript function to cancel the form and go back to the index page
+    function cancelForm() {
+        // Redirect to the index page
+        window.location.href = '/';  // Replace '/index' with the actual URL of your index page
+    }     
     $(document).ready(function(){
         $('.datepicker').datepicker({
             format: 'yyyy-mm-dd',

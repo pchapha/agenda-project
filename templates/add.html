@@ -26,11 +26,34 @@
                     <label for="{{ column_name }}">{{ column_name.capitalize() }} (Type: {{ column_type }}):</label>
                 
                     {% if column_type == 'BOOLEAN' %}
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="{{ column_name }}" name="{{ column_name }}">
-                            <label class="form-check-label" for="{{ column_name }}">Check if true</label>
-                            <input type="hidden" name="{{ column_name }}" value="off">
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#{{ column_name }}Modal">
+                        Open {{ column_name }} Modal
+                    </button>
+
+                    <!-- Display the value below the button on the add page -->
+                    <p id="{{ column_name }}Display"></p>
+                    
+                    <!-- Modal -->
+                    <div class="modal fade" id="{{ column_name }}Modal" tabindex="-1" role="dialog" aria-labelledby="{{ column_name }}ModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="{{ column_name }}ModalLabel">Enter {{ column_name }} value</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="text" class="form-control" id="{{ column_name }}Input" name="{{ column_name }}">
+                                    <p id="{{ column_name }}Display"></p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" onclick="updateForm('{{ column_name }}')">Save changes</button>
+                                </div>
+                            </div>
                         </div>
+                    </div>
                     {% elif column_type == 'DATETIME' %}
                         <input type="text" class="form-control datepicker" id="{{ column_name }}" name="{{ column_name }}">
                         <!-- Include necessary datepicker scripts -->
@@ -42,11 +65,12 @@
             {% endif %}
         {% endfor %}
         
- 
+             
 
         <button type="submit" class="btn btn-primary">Add Row</button>
+        <button type="button" class="btn btn-secondary" onclick="cancelForm()">Cancel</button>
     </form>
-</div>
+    </div>
 
 <!-- Include Bootstrap JS (optional) -->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
@@ -55,10 +79,30 @@
 
 <!-- Include Datepicker JS (if using datetime field) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
+
 <script>
+     // JavaScript function to update the form input
+    function updateForm(columnName) {
+        var inputValue = $('#' + columnName + 'Input').val();
+
+        // Set the value of the form input field
+        $('#' + columnName).val(inputValue);
+        // Display the value below the button on the add page
+        $('#' + columnName + 'Display').text('Input: ' + inputValue);
+        // Display the value below the input in the modal
+        $('#' + columnName + 'Display').text('Input: ' + inputValue);
+        // Close the modal
+        $('#' + columnName + 'Modal').modal('hide');
+    }
+    // JavaScript function to cancel the form and go back to the index page
+    function cancelForm() {
+        // Redirect to the index page
+        window.location.href = '/';  // Replace '/index' with the actual URL of your index page
+    }       
     $(document).ready(function(){
         $('.datepicker').datepicker({
-            format: 'yyyy-mm-dd',
+            format: 'yyyy-mm-dd',   
             autoclose: true,
             todayHighlight: true
         });
