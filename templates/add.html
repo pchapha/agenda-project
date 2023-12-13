@@ -2,111 +2,196 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add New Row</title>
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
+
+    <!-- jQuery -->
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- DataTables JavaScript -->
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
     
     <!-- Include Bootstrap CSS (you can replace this link with your local Bootstrap file) -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        /* Style for the modal popup */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-
-<div class="container">
-    <h2 class="mt-4">Add New Row</h2>
-    <!-- Add space for the message -->
-    <div class="mt-4 mb-4">
-        {% if message %}
-            <p class="text-danger">{{ message }}</p>
-        {% endif %}
-    </div>
-
-    <form method="post">
-        {% for column, (column_name, column_type) in columns_info.items() %}
-            {% if column_name not in ['meeting_id'] %}
+    <div class="container">
+        <h2 class="mt-4">Add New Row</h2>
+        <!-- Add space for the message -->
+        <div class="mt-4 mb-4">
+            {% if message %}
+                <p class="text-danger">{{ message }}</p>
+            {% endif %}
+        </div>
+        <form method="post">
+            {% for column, (column_name, column_type) in columns_info.items() %}
+                {% if column_name not in ['meeting_id'] %}
                 <div class="form-group">
                     <label for="{{ column_name }}">{{ column_name.capitalize() }} (Type: {{ column_type }}):</label>
-                
-                    {% if column_type == 'BOOLEAN' %}
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#{{ column_name }}Modal">
-                        Open {{ column_name }} Modal
-                    </button>
+        
+                    {% if column_name == 'related_meeting' %}
+                        <input type="hidden" id="related_meeting" name="related_meeting">
 
-                    <!-- Display the value below the button on the add page -->
-                    <p id="{{ column_name }}Display"></p>
-                    
-                    <!-- Modal -->
-                    <div class="modal fade" id="{{ column_name }}Modal" tabindex="-1" role="dialog" aria-labelledby="{{ column_name }}ModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="{{ column_name }}ModalLabel">Enter {{ column_name }} value</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <input type="text" class="form-control" id="{{ column_name }}Input" name="{{ column_name }}">
-                                    <p id="{{ column_name }}Display"></p>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                    <button type="button" class="btn btn-primary" onclick="updateForm('{{ column_name }}')">Save changes</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        <!-- Move the button inside this condition -->
+                        <button type="button" onclick="openPopup()"> Show Meeting Data1</button>
+                        <!-- Display the 'related_meeting' value below the button -->
+                        <div id="relatedMeetingValue"> Please select if have relatedMeeting </div>
+
                     {% elif column_type == 'DATETIME' %}
                         <input type="text" class="form-control datepicker" id="{{ column_name }}" name="{{ column_name }}">
                         <!-- Include necessary datepicker scripts -->
                     {% else %}
                         <input type="text" class="form-control" id="{{ column_name }}" name="{{ column_name }}">
                     {% endif %}
-                    
-                </div>
-            {% endif %}
-        {% endfor %}
         
-             
+                </div>
+                {% endif %}
+            {% endfor %}
+        
+            <button type="submit" class="btn btn-primary">Add Row</button>
+            <button type="button" class="btn btn-secondary" onclick="cancelForm()">Cancel</button>
+        </form>
+        <!-- Add this block to display the DataTable -->
+        <div id="selectedPrimaryKey"></div>
+        
+        <!-- The Modal -->
+        <div id="meetingModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closePopup()">&times;</span>
+                <h2>Meeting Data</h2>
+                <table id="meetingTable" class="display"></table>
+            </div>
+        </div>
+        
+        <script>
+        let selectedRowData;
+        let table;  // Declare the DataTable outside the function
+        
+        function openPopup() {
+            // Check if the DataTable is already initialized
+            if (!table || !$.fn.DataTable.isDataTable('#meetingTable')) {
+                // If not initialized, create a new DataTable instance
+                fetch('/get_meeting_data', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Display the meeting data in the DataTable in the modal popup
+                        table = $('#meetingTable').DataTable({
+                            data: data,
+                            columns: [
+                                ...Object.keys(data[0]).map(key => ({ title: key, data: key })),
+                                {
+                                    title: 'Actions',
+                                    data: null,
+                                    defaultContent: '<button class="sendButton">Send Primary Key</button>'
+                                }
+                            ]
+                        });
+        
+                        // Add a click event listener to the button column
+                        $('#meetingTable tbody').on('click', 'tr', '.sendButton', function (event) {
+                            event.stopPropagation();
+                            table.rows().nodes().to$().removeClass('highlight');
+                            selectedRowData = table.row(this).data();
+                            const primaryKeyElement = document.getElementById('selectedPrimaryKey');
+                            primaryKeyElement.innerHTML = `Selected Primary Key: ${selectedRowData['Meeting ID']}`;
+                            $(this).addClass('highlight');
+        
+                            // Create a confirmation dialog
+                            const confirmDialog = confirm(`Do you want to send the Primary Key ${selectedRowData['Meeting ID']} ?`);
+        
+                            if (confirmDialog) {
+                                // User clicked "OK," send the primary key
+                                // alert(`Sending Primary Key: ${selectedRowData['Meeting ID']}`);
+                                closePopup();  // Close the popup
+                                // document.getElementById('related_meeting').value = selectedRowData['Meeting ID'];
 
-        <button type="submit" class="btn btn-primary">Add Row</button>
-        <button type="button" class="btn btn-secondary" onclick="cancelForm()">Cancel</button>
-    </form>
-    </div>
+                                // Set the value of 'related_meeting'
+                                const relatedMeetingValueElement = document.getElementById('relatedMeetingValue');
+                                relatedMeetingValueElement.innerHTML = `Related Meeting Value: ${selectedRowData['Meeting ID']}`;
 
-<!-- Include Bootstrap JS (optional) -->
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+                                // Set the value of 'related_meeting' in the form
+                                document.getElementById('related_meeting').value = selectedRowData['Meeting ID'];
+                            } else {
+                                // User clicked "Cancel," do nothing
+                                // You may add additional logic here if needed
+                                primaryKeyElement.innerHTML = '';
+                                // Set the value of 'related_meeting'
+                                const relatedMeetingValueElement = document.getElementById('relatedMeetingValue');
+                                relatedMeetingValueElement.innerHTML = `Related Meeting hasn't been selected yet`;
+                            }
+                        });
+        
+                        document.getElementById('meetingModal').style.display = 'block';
+                    });
+            } else {
+                // If DataTable is already initialized, just open the modal
+                document.getElementById('meetingModal').style.display = 'block';
+            }
+        }
+        
+        function closePopup() {
+            document.getElementById('meetingModal').style.display = 'none';
+            // Do not destroy the DataTable here to allow reopening the popup
+            // $('#meetingTable').DataTable().destroy();
+            document.getElementById('selectedPrimaryKey').innerHTML = '';
+        }
 
-<!-- Include Datepicker JS (if using datetime field) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
-
-
-<script>
-     // JavaScript function to update the form input
-    function updateForm(columnName) {
-        var inputValue = $('#' + columnName + 'Input').val();
-
-        // Set the value of the form input field
-        $('#' + columnName).val(inputValue);
-        // Display the value below the button on the add page
-        $('#' + columnName + 'Display').text('Input: ' + inputValue);
-        // Display the value below the input in the modal
-        $('#' + columnName + 'Display').text('Input: ' + inputValue);
-        // Close the modal
-        $('#' + columnName + 'Modal').modal('hide');
-    }
-    // JavaScript function to cancel the form and go back to the index page
-    function cancelForm() {
-        // Redirect to the index page
-        window.location.href = '/';  // Replace '/index' with the actual URL of your index page
-    }       
-    $(document).ready(function(){
-        $('.datepicker').datepicker({
-            format: 'yyyy-mm-dd',   
-            autoclose: true,
-            todayHighlight: true
+        // JavaScript function to cancel the form and go back to the index page
+        function cancelForm() {
+            // Redirect to the index page
+            window.location.href = '/';  // Replace '/index' with the actual URL of your index page
+        }       
+        $(document).ready(function(){
+            $('.datepicker').datepicker({
+                format: 'yyyy-mm-dd',   
+                autoclose: true,
+                todayHighlight: true
+            });
         });
-    });
-</script>
+        </script>
+        
+        
 </body>
 </html>
