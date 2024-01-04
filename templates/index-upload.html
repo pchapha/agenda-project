@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload Example</title>
+</head>
+<body>
+
+<form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+    <input type="file" name="files[]" id="fileInput" multiple style="display:none;" onchange="handleFileSelection(this)">
+    <button type="button" onclick="chooseFile()">Choose File</button>
+    <p id="selectedFiles"></p>
+    <button type="button" onclick="uploadFiles()">Upload</button>
+</form>
+
+<script>
+    let selectedFiles = [];
+
+    function chooseFile() {
+        const fileInput = document.getElementById('fileInput');
+        fileInput.click();
+    }
+
+    function handleFileSelection(input) {
+        const files = input.files;
+
+        for (let i = 0; i < files.length; i++) {
+            selectedFiles.push(files[i]);
+        }
+
+        updateSelectedFiles();
+        input.value = ''; // Clear the file input to allow selecting the same file again
+    }
+
+    function updateSelectedFiles() {
+        const selectedFilesElement = document.getElementById('selectedFiles');
+        selectedFilesElement.innerHTML = 'Selected Files: ' + selectedFiles.map((file, index) => {
+            return `
+                <span>${file.name} <span style="cursor: pointer; color: red;" onclick="cancelFile(${index})">❌</span></span>
+            `;
+        }).join(', ');
+    }
+
+    function cancelFile(index) {
+        selectedFiles.splice(index, 1);
+        updateSelectedFiles();
+    }
+
+    function uploadFiles() {
+        if (selectedFiles.length === 0) {
+            alert('Please choose at least one file.');
+            return;
+        }
+
+        // Create a FormData object
+        const formData = new FormData();
+
+        // Append each file to the FormData object
+        for (let i = 0; i < selectedFiles.length; i++) {
+            formData.append('files[]', selectedFiles[i]);
+        }
+
+        // Create an XMLHttpRequest object
+        const xhr = new XMLHttpRequest();
+
+        // Define the request method, URL, and set asynchronous to true
+        xhr.open('POST', '/upload', true);
+
+        // Define the onload and onerror callbacks
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                alert(xhr.responseText);
+            } else {
+                alert('Error uploading files. Please try again.');
+            }
+        };
+
+        xhr.onerror = function() {
+            alert('Error uploading files. Please try again.');
+        };
+
+        // Send the FormData object
+        xhr.send(formData);
+
+        // Clear selected files after upload
+        selectedFiles = [];
+        updateSelectedFiles();
+    }
+</script>
+
+</body>
+</html>

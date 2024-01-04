@@ -68,32 +68,36 @@
         <form method="post">
             {% for column, (column_name, column_type) in columns_info.items() %}
                 {% if column_name not in ['meeting_id'] %}
-                <div class="form-group">
-                    <label for="{{ column_name }}">{{ column_name.capitalize() }} (Type: {{ column_type }}):</label>
-        
-                    {% if column_name == 'related_meeting' %}
-                        <input type="hidden" id="related_meeting" name="related_meeting">
+                    <div class="form-group">
+                        <label for="{{ column_name }}">{{ column_name.capitalize() }} (Type: {{ column_type }}):</label>
+                
+                        {% if column_name == 'related_meeting' %}
+                            <input type="hidden" id="related_meeting" name="related_meeting">
 
                         <!-- Move the button inside this condition -->
-                        <button type="button" onclick="openPopup()"> Show Meeting Data1</button>
-                        <!-- Display the 'related_meeting' value below the button -->
+                            <button type="button" onclick="openPopup()"> Show Meeting Data1</button>
+                            <!-- Display the 'related_meeting' value below the button -->
                         <div id="relatedMeetingValue"> Please select if have relatedMeeting </div>
 
-                    {% elif column_type == 'DATETIME' %}
-                        <input type="text" class="form-control datepicker" id="{{ column_name }}" name="{{ column_name }}">
-                        <!-- Include necessary datepicker scripts -->
-                    {% else %}
-                        <input type="text" class="form-control" id="{{ column_name }}" name="{{ column_name }}">
-                    {% endif %}
-        
-                </div>
+                        {% elif column_type == 'DATETIME' %}
+                            <input type="text" class="form-control datepicker" id="{{ column_name }}" name="{{ column_name }}">
+<!-- Include necessary datepicker scripts -->
+                        {% else %}
+                            <input type="text" class="form-control" id="{{ column_name }}" name="{{ column_name }}">
+                        {% endif %}
+                
+                    </div>
                 {% endif %}
             {% endfor %}
-        
-            <button type="submit" class="btn btn-primary">Add Row</button>
+            <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+                <input type="file" name="files[]" id="fileInput" multiple style="display:none;" onchange="handleFileSelection(this)">
+                <button type="button" onclick="chooseFile()">Choose File</button>
+                <p id="selectedFiles"></p>
+
+            <button type="submit" onclick="uploadFiles()" class="btn btn-primary">Add Row</button>
             <button type="button" class="btn btn-secondary" onclick="cancelForm()">Cancel</button>
         </form>
-        <!-- Add this block to display the DataTable -->
+                <!-- Add this block to display the DataTable -->
         <div id="selectedPrimaryKey"></div>
         
         <!-- The Modal -->
@@ -190,6 +194,80 @@
                 todayHighlight: true
             });
         });
+
+        let selectedFiles = [];
+
+function chooseFile() {
+    const fileInput = document.getElementById('fileInput');
+    fileInput.click();
+}
+
+function handleFileSelection(input) {
+    const files = input.files;
+
+    for (let i = 0; i < files.length; i++) {
+        selectedFiles.push(files[i]);
+    }
+
+    updateSelectedFiles();
+    input.value = ''; // Clear the file input to allow selecting the same file again
+}
+
+function updateSelectedFiles() {
+    const selectedFilesElement = document.getElementById('selectedFiles');
+    selectedFilesElement.innerHTML = 'Selected Files: ' + selectedFiles.map((file, index) => {
+        return `
+            <span>${file.name} <span style="cursor: pointer; color: red;" onclick="cancelFile(${index})">❌</span></span>
+        `;
+    }).join(', ');
+}
+
+function cancelFile(index) {
+    selectedFiles.splice(index, 1);
+    updateSelectedFiles();
+}
+
+function uploadFiles() {
+    if (selectedFiles.length === 0) {
+        alert('Please choose at least one file.');
+        return;
+    }
+
+    // Create a FormData object
+    const formData = new FormData();
+
+    // Append each file to the FormData object
+    for (let i = 0; i < selectedFiles.length; i++) {
+        formData.append('files[]', selectedFiles[i]);
+    }
+
+
+    // Create an XMLHttpRequest object
+    const xhr = new XMLHttpRequest();
+
+    // Define the request method, URL, and set asynchronous to true
+    xhr.open('POST', '/upload', true);
+
+    // Define the onload and onerror callbacks
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            pass
+        } else {
+            alert('Error uploading files. Please try again.');
+        }
+    };
+
+    xhr.onerror = function() {
+        alert('Error uploading files. Please try again.');
+    };
+
+    // Send the FormData object
+    xhr.send(formData);
+
+    // Clear selected files after upload
+    selectedFiles = [];
+    updateSelectedFiles();
+}
         </script>
         
         

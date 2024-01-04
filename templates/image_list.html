@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image List</title>
+    <style>
+        .image-container {
+            max-width: 500px;
+            max-height: 500px;
+            overflow: hidden;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .active-link {
+            color: red; /* You can set any color for the active link */
+        }
+    </style>
+</head>
+<body>
+    <h1>Image List</h1>
+    <div>
+        {% for file in image_files %}
+            <div>
+                <a href="#" onclick="showImage(this, '{{ url_for('view_image', filename=file) }}')">{{ file }}</a>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="image-container" id="image-container"></div>
+
+    <script>
+        function showImage(link, imageUrl) {
+            var imageContainer = document.getElementById('image-container');
+            
+            // Remove 'active-link' class from all links
+            var links = document.querySelectorAll('a');
+            links.forEach(function (item) {
+                item.classList.remove('active-link');
+            });
+
+            // Add 'active-link' class to the clicked link
+            link.classList.add('active-link');
+
+            imageContainer.innerHTML = '<img src="' + imageUrl + '" alt="Image">';
+        }
+    </script>
+</body>
+</html>
